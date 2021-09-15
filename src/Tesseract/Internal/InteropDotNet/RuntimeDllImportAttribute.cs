@@ -16,7 +16,7 @@ namespace InteropDotNet
 
         public CharSet CharSet;
 
-        public bool SetLastError;        
+        public bool SetLastError;
 
         public bool BestFitMapping;
 
@@ -24,9 +24,6 @@ namespace InteropDotNet
 
         public string LibraryFileName { get; private set; }
 
-        public RuntimeDllImportAttribute(string libraryFileName)
-        {
-            LibraryFileName = libraryFileName;
-        }
+        public RuntimeDllImportAttribute(string libraryFileName) => LibraryFileName = libraryFileName;
     }
 }

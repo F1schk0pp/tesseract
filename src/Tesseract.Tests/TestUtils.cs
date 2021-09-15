@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace Tesseract.Tests
 {
@@ -13,12 +11,9 @@ namespace Tesseract.Tests
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        public static string NormaliseNewLine(string text)
-        {
-            return text
+        public static string NormaliseNewLine(string text) => text
                 .Replace("\r\n", "\n")
                 .Replace("\r", "\n");
-        }
 
         public static void Cmd(string command, params object[] arguments)
         {
@@ -26,13 +21,15 @@ namespace Tesseract.Tests
             ProcessStartInfo processInfo;
             Process process;
 
-            var argumentStr = String.Join(" ", arguments.Select(x => $"\"{x}\""));
-            processInfo = new ProcessStartInfo(command, argumentStr);
-            processInfo.CreateNoWindow = true;
-            processInfo.UseShellExecute = false;
-            // *** Redirect the output ***
-            processInfo.RedirectStandardError = true;
-            processInfo.RedirectStandardOutput = true;
+            string argumentStr = string.Join(" ", arguments.Select(x => $"\"{x}\""));
+            processInfo = new ProcessStartInfo(command, argumentStr)
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                // *** Redirect the output ***
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
+            };
 
             process = Process.Start(processInfo);
             process.WaitForExit();
@@ -44,8 +41,8 @@ namespace Tesseract.Tests
 
             exitCode = process.ExitCode;
 
-            Console.WriteLine("output>>" + (String.IsNullOrEmpty(output) ? "(none)" : output));
-            Console.WriteLine("error>>" + (String.IsNullOrEmpty(error) ? "(none)" : error));
+            Console.WriteLine("output>>" + (string.IsNullOrEmpty(output) ? "(none)" : output));
+            Console.WriteLine("error>>" + (string.IsNullOrEmpty(error) ? "(none)" : error));
             Console.WriteLine("ExitCode: " + exitCode.ToString(), "ExecuteCommand");
             process.Close();
         }

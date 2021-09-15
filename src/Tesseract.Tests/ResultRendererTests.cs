@@ -1,10 +1,7 @@
 ﻿using NUnit.Framework;
-using System;
+
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Tesseract.Tests
 {
@@ -16,15 +13,13 @@ namespace Tesseract.Tests
         private TesseractEngine _engine;
 
         [SetUp]
-        public void Inititialse()
-        {
-            _engine = CreateEngine();
-        }
+        public void Inititialse() => _engine = CreateEngine();
 
         [TearDown]
         public void Dispose()
         {
-            if (_engine != null) {
+            if (_engine != null)
+            {
                 _engine.Dispose();
                 _engine = null;
             }
@@ -35,133 +30,139 @@ namespace Tesseract.Tests
         [Test]
         public void CanRenderResultsIntoTextFile()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\Text\phototest");
-            using (var renderer = ResultRenderer.CreateTextRenderer(resultPath)) {
-                var examplePixPath = TestFilePath("Ocr/phototest.tif");
+            string resultPath = TestResultRunFile(@"ResultRenderers\Text\phototest");
+            using (IResultRenderer renderer = ResultRenderer.CreateTextRenderer(resultPath))
+            {
+                string examplePixPath = TestFilePath("Ocr/phototest.tif");
                 ProcessFile(renderer, examplePixPath);
             }
 
-            var expectedOutputFilename = Path.ChangeExtension(resultPath, "txt");
+            string expectedOutputFilename = Path.ChangeExtension(resultPath, "txt");
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a Text file \"{expectedOutputFilename}\" to have been created; but none was found.");
         }
 
         [Test]
         public void CanRenderResultsIntoPdfFile()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\PDF\phototest");
-            using (var renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false)) {
-                var examplePixPath = TestFilePath("Ocr/phototest.tif");
+            string resultPath = TestResultRunFile(@"ResultRenderers\PDF\phototest");
+            using (IResultRenderer renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
+            {
+                string examplePixPath = TestFilePath("Ocr/phototest.tif");
                 ProcessFile(renderer, examplePixPath);
             }
 
-            var expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
-            using (var renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
+            string expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
+            using (IResultRenderer renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
             {
-                var examplePixPath = TestFilePath("Ocr/phototest.tif");
+                string examplePixPath = TestFilePath("Ocr/phototest.tif");
                 ProcessImageFile(renderer, examplePixPath);
             }
-            
+
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a PDF file \"{expectedOutputFilename}\" to have been created; but none was found.");
         }
 
         [Test]
         public void CanRenderResultsIntoPdfFile1()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\PDF\phototest");
-            using (var renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
+            string resultPath = TestResultRunFile(@"ResultRenderers\PDF\phototest");
+            using (IResultRenderer renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
             {
-                var examplePixPath = TestFilePath("Ocr/phototest.tif");
+                string examplePixPath = TestFilePath("Ocr/phototest.tif");
                 ProcessImageFile(renderer, examplePixPath);
             }
 
-            var expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
+            string expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a PDF file \"{expectedOutputFilename}\" to have been created; but none was found.");
         }
 
         [Test]
         public void CanRenderMultiplePageDocumentToPdfFile()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\PDF\multi-page");
-            using (var renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false)) {
-                var examplePixPath = TestFilePath("processing/multi-page.tif");
+            string resultPath = TestResultRunFile(@"ResultRenderers\PDF\multi-page");
+            using (IResultRenderer renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
+            {
+                string examplePixPath = TestFilePath("processing/multi-page.tif");
                 ProcessMultipageTiff(renderer, examplePixPath);
             }
 
-            var expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
-            using (var renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
+            string expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
+            using (IResultRenderer renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
             {
-                var examplePixPath = TestFilePath("processing/multi-page.tif");
+                string examplePixPath = TestFilePath("processing/multi-page.tif");
                 ProcessImageFile(renderer, examplePixPath);
             }
-            
+
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a PDF file \"{expectedOutputFilename}\" to have been created; but none was found.");
         }
 
         [Test]
         public void CanRenderMultiplePageDocumentToPdfFile1()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\PDF\multi-page");
-            using (var renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
+            string resultPath = TestResultRunFile(@"ResultRenderers\PDF\multi-page");
+            using (IResultRenderer renderer = ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false))
             {
-                var examplePixPath = TestFilePath("processing/multi-page.tif");
+                string examplePixPath = TestFilePath("processing/multi-page.tif");
                 ProcessImageFile(renderer, examplePixPath);
             }
 
-            var expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
+            string expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a PDF file \"{expectedOutputFilename}\" to have been created; but none was found.");
         }
 
         [Test]
         public void CanRenderResultsIntoHOcrFile()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\HOCR\phototest");
-            using (var renderer = ResultRenderer.CreateHOcrRenderer(resultPath)) {
-                var examplePixPath = TestFilePath("Ocr/phototest.tif");
+            string resultPath = TestResultRunFile(@"ResultRenderers\HOCR\phototest");
+            using (IResultRenderer renderer = ResultRenderer.CreateHOcrRenderer(resultPath))
+            {
+                string examplePixPath = TestFilePath("Ocr/phototest.tif");
                 ProcessFile(renderer, examplePixPath);
             }
 
-            var expectedOutputFilename = Path.ChangeExtension(resultPath, "hocr");
+            string expectedOutputFilename = Path.ChangeExtension(resultPath, "hocr");
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a HOCR file \"{expectedOutputFilename}\" to have been created; but none was found.");
         }
 
         [Test]
         public void CanRenderResultsIntoUnlvFile()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\UNLV\phototest");
-            using (var renderer = ResultRenderer.CreateUnlvRenderer(resultPath)) {
-                var examplePixPath = TestFilePath("Ocr/phototest.tif");
+            string resultPath = TestResultRunFile(@"ResultRenderers\UNLV\phototest");
+            using (IResultRenderer renderer = ResultRenderer.CreateUnlvRenderer(resultPath))
+            {
+                string examplePixPath = TestFilePath("Ocr/phototest.tif");
                 ProcessFile(renderer, examplePixPath);
             }
 
-            var expectedOutputFilename = Path.ChangeExtension(resultPath, "unlv");
+            string expectedOutputFilename = Path.ChangeExtension(resultPath, "unlv");
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a Unlv file \"{expectedOutputFilename}\" to have been created; but none was found.");
         }
 
         [Test]
         public void CanRenderResultsIntoBoxFile()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\Box\phototest");
-            using (var renderer = ResultRenderer.CreateBoxRenderer(resultPath)) {
-                var examplePixPath = TestFilePath("Ocr/phototest.tif");
+            string resultPath = TestResultRunFile(@"ResultRenderers\Box\phototest");
+            using (IResultRenderer renderer = ResultRenderer.CreateBoxRenderer(resultPath))
+            {
+                string examplePixPath = TestFilePath("Ocr/phototest.tif");
                 ProcessFile(renderer, examplePixPath);
             }
 
-            var expectedOutputFilename = Path.ChangeExtension(resultPath, "box");
+            string expectedOutputFilename = Path.ChangeExtension(resultPath, "box");
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a Box file \"{expectedOutputFilename}\" to have been created; but none was found.");
         }
 
         [Test]
         public void CanRenderResultsIntoMultipleOutputFormats()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\PDF\phototest");
-            List<RenderedFormat> formats = new List<RenderedFormat> { RenderedFormat.HOCR, RenderedFormat.PDF, RenderedFormat.TEXT };
-            using (var renderer = ResultRenderer.CreateRenderers(resultPath, DataPath, formats))
+            string resultPath = TestResultRunFile(@"ResultRenderers\PDF\phototest");
+            List<RenderedFormat> formats = new() { RenderedFormat.HOCR, RenderedFormat.PDF, RenderedFormat.TEXT };
+            using (IResultRenderer renderer = ResultRenderer.CreateRenderers(resultPath, DataPath, formats))
             {
-                var examplePixPath = TestFilePath("Ocr/phototest.tif");
+                string examplePixPath = TestFilePath("Ocr/phototest.tif");
                 ProcessFile(renderer, examplePixPath);
             }
 
-            var expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
+            string expectedOutputFilename = Path.ChangeExtension(resultPath, "pdf");
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a PDF file \"{expectedOutputFilename}\" to have been created; but none was found.");
             expectedOutputFilename = Path.ChangeExtension(resultPath, "hocr");
             Assert.That(File.Exists(expectedOutputFilename), $"Expected a HOCR file \"{expectedOutputFilename}\" to have been created; but none was found.");
@@ -172,83 +173,79 @@ namespace Tesseract.Tests
         [Test]
         public void CanRenderMultiplePageDocumentIntoMultipleResultRenderers()
         {
-            var resultPath = TestResultRunFile(@"ResultRenderers\Aggregate\multi-page");
-            using (var renderer = new AggregateResultRenderer(ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false), ResultRenderer.CreateTextRenderer(resultPath))) {
-                var examplePixPath = TestFilePath("processing/multi-page.tif");
+            string resultPath = TestResultRunFile(@"ResultRenderers\Aggregate\multi-page");
+            using (AggregateResultRenderer renderer = new(ResultRenderer.CreatePdfRenderer(resultPath, DataPath, false), ResultRenderer.CreateTextRenderer(resultPath)))
+            {
+                string examplePixPath = TestFilePath("processing/multi-page.tif");
                 ProcessMultipageTiff(renderer, examplePixPath);
             }
 
-            var expectedPdfOutputFilename = Path.ChangeExtension(resultPath, "pdf");
+            string expectedPdfOutputFilename = Path.ChangeExtension(resultPath, "pdf");
             Assert.That(File.Exists(expectedPdfOutputFilename), $"Expected a PDF file \"{expectedPdfOutputFilename}\" to have been created; but none was found.");
 
-            var expectedTxtOutputFilename = Path.ChangeExtension(resultPath, "txt");
+            string expectedTxtOutputFilename = Path.ChangeExtension(resultPath, "txt");
             Assert.That(File.Exists(expectedTxtOutputFilename), $"Expected a Text file \"{expectedTxtOutputFilename}\" to have been created; but none was found.");
         }
 
         private void ProcessMultipageTiff(IResultRenderer renderer, string filename)
         {
-            var imageName = Path.GetFileNameWithoutExtension(filename);
-            using (var pixA = PixArray.LoadMultiPageTiffFromFile(filename)) {
-                int expectedPageNumber = -1;
-                using (renderer.BeginDocument(imageName)) {
-                    Assert.AreEqual(renderer.PageNumber, expectedPageNumber);
-                    foreach (var pix in pixA) {
-                        using (var page = _engine.Process(pix, imageName)) {
-                            var addedPage = renderer.AddPage(page);
-                            expectedPageNumber++;
+            string imageName = Path.GetFileNameWithoutExtension(filename);
+            using PixArray pixA = PixArray.LoadMultiPageTiffFromFile(filename);
+            int expectedPageNumber = -1;
+            using (renderer.BeginDocument(imageName))
+            {
+                Assert.AreEqual(renderer.PageNumber, expectedPageNumber);
+                foreach (Pix pix in pixA)
+                {
+                    using Page page = _engine.Process(pix, imageName);
+                    bool addedPage = renderer.AddPage(page);
+                    expectedPageNumber++;
 
-                            Assert.That(addedPage, Is.True);
-                            Assert.That(renderer.PageNumber, Is.EqualTo(expectedPageNumber));
-                        }
-                    }
+                    Assert.That(addedPage, Is.True);
+                    Assert.That(renderer.PageNumber, Is.EqualTo(expectedPageNumber));
                 }
-
-                Assert.That(renderer.PageNumber, Is.EqualTo(expectedPageNumber));
             }
+
+            Assert.That(renderer.PageNumber, Is.EqualTo(expectedPageNumber));
         }
 
         private void ProcessFile(IResultRenderer renderer, string filename)
         {
-            var imageName = Path.GetFileNameWithoutExtension(filename);
-            using (var pix = Pix.LoadFromFile(filename)) {
-                using (renderer.BeginDocument(imageName)) {
-                    Assert.AreEqual(renderer.PageNumber, -1);
-                    using (var page = _engine.Process(pix, imageName)) {
-                        var addedPage = renderer.AddPage(page);
+            string imageName = Path.GetFileNameWithoutExtension(filename);
+            using Pix pix = Pix.LoadFromFile(filename);
+            using (renderer.BeginDocument(imageName))
+            {
+                Assert.AreEqual(renderer.PageNumber, -1);
+                using Page page = _engine.Process(pix, imageName);
+                bool addedPage = renderer.AddPage(page);
 
-                        Assert.That(addedPage, Is.True);
-                        Assert.That(renderer.PageNumber, Is.EqualTo(0));
-                    }
-                }
-
-                Assert.AreEqual(renderer.PageNumber, 0);
+                Assert.That(addedPage, Is.True);
+                Assert.That(renderer.PageNumber, Is.EqualTo(0));
             }
+
+            Assert.AreEqual(renderer.PageNumber, 0);
         }
 
         private void ProcessImageFile(IResultRenderer renderer, string filename)
         {
-            var imageName = Path.GetFileNameWithoutExtension(filename);
-            using (var pixA = ReadImageFileIntoPixArray(filename))
+            string imageName = Path.GetFileNameWithoutExtension(filename);
+            using PixArray pixA = ReadImageFileIntoPixArray(filename);
+            int expectedPageNumber = -1;
+            using (renderer.BeginDocument(imageName))
             {
-                int expectedPageNumber = -1;
-                using (renderer.BeginDocument(imageName))
+                Assert.AreEqual(renderer.PageNumber, expectedPageNumber);
+                foreach (Pix pix in pixA)
                 {
-                    Assert.AreEqual(renderer.PageNumber, expectedPageNumber);
-                    foreach (var pix in pixA)
-                    {
-                        using (var page = _engine.Process(pix, imageName))
-                        {
-                            var addedPage = renderer.AddPage(page);
-                            expectedPageNumber++;
+                    using Page page = _engine.Process(pix, imageName);
+                    bool addedPage = renderer.AddPage(page);
+                    expectedPageNumber++;
 
-                            Assert.That(addedPage, Is.True);
-                            Assert.That(renderer.PageNumber, Is.EqualTo(expectedPageNumber));
-                        }
-                    }
+                    Assert.That(addedPage, Is.True);
+                    Assert.That(renderer.PageNumber, Is.EqualTo(expectedPageNumber));
                 }
-
-                Assert.That(renderer.PageNumber, Is.EqualTo(expectedPageNumber));
             }
+
+            Assert.That(renderer.PageNumber, Is.EqualTo(expectedPageNumber));
         }
 
         private PixArray ReadImageFileIntoPixArray(string filename)

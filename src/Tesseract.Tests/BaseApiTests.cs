@@ -1,6 +1,4 @@
 ﻿using NUnit.Framework;
-using System;
-using System.Diagnostics;
 
 namespace Tesseract.Tests
 {
@@ -10,7 +8,7 @@ namespace Tesseract.Tests
         [Test]
         public void CanGetVersion()
         {
-            var version = Interop.TessApi.BaseApiGetVersion();
+            string version = Interop.TessApi.BaseApiGetVersion();
             Assert.That(version, Does.StartWith("4.1.1"));
         }
     }

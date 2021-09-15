@@ -1,12 +1,10 @@
 ﻿using NUnit.Framework;
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using Tesseract.Interop;
 
 namespace Tesseract.Tests
 {
@@ -18,28 +16,26 @@ namespace Tesseract.Tests
         [Test]
         public void CanGetVersion()
         {
-            using (var engine = CreateEngine())
-            {
-                Assert.That(engine.Version, Does.StartWith("4.1.1"));
-            }
+            using TesseractEngine engine = CreateEngine();
+            Assert.That(engine.Version, Does.StartWith("4.1.1"));
         }
 
         [Test]
         public void CanParseMultipageTif()
         {
-            using (var engine = CreateEngine()) {
-                using (var pixA = PixArray.LoadMultiPageTiffFromFile(TestFilePath("./processing/multi-page.tif"))) {
-                    int i = 1;
-                    foreach (var pix in pixA) {
-                        using (var page = engine.Process(pix)) {
-                            var text = page.GetText().Trim();
+            using TesseractEngine engine = CreateEngine();
+            using PixArray pixA = PixArray.LoadMultiPageTiffFromFile(TestFilePath("./processing/multi-page.tif"));
+            int i = 1;
+            foreach (Pix pix in pixA)
+            {
+                using (Page page = engine.Process(pix))
+                {
+                    string text = page.GetText().Trim();
 
-                            string expectedText = String.Format("Page {0}", i);
-                            Assert.That(text, Is.EqualTo(expectedText));
-                        }
-                        i++;
-                    }
+                    string expectedText = string.Format("Page {0}", i);
+                    Assert.That(text, Is.EqualTo(expectedText));
                 }
+                i++;
             }
         }
 
@@ -50,55 +46,45 @@ namespace Tesseract.Tests
         [TestCase(PageSegMode.SingleWord, "This")]
         [TestCase(PageSegMode.SingleChar, "T")]
         [TestCase(PageSegMode.SingleBlockVertText, "A line of text", Ignore = "#490")]
-        public void CanParseText_UsingMode(PageSegMode mode, String expectedText)
+        public void CanParseText_UsingMode(PageSegMode mode, string expectedText)
         {
 
-            using (var engine = CreateEngine(mode:EngineMode.TesseractAndLstm)) {
-                var demoFilename = String.Format("./Ocr/PSM_{0}.png", mode);
-                using (var pix = LoadTestPix(demoFilename)) {
-                    using (var page = engine.Process(pix, mode)) {
-                        var text = page.GetText().Trim();
+            using TesseractEngine engine = CreateEngine(mode: EngineMode.TesseractAndLstm);
+            string demoFilename = string.Format("./Ocr/PSM_{0}.png", mode);
+            using Pix pix = LoadTestPix(demoFilename);
+            using Page page = engine.Process(pix, mode);
+            string text = page.GetText().Trim();
 
-                        Assert.That(text, Is.EqualTo(expectedText));
-
-                    }
-                }    
-            }
+            Assert.That(text, Is.EqualTo(expectedText));
         }
 
         [Test]
         public void CanParseText()
         {
-            using (var engine = CreateEngine()) {
-                using (var img = LoadTestPix(TestImagePath)) {
-                    using (var page = engine.Process(img)) {
-                        var text = page.GetText();
+            using TesseractEngine engine = CreateEngine();
+            using Pix img = LoadTestPix(TestImagePath);
+            using Page page = engine.Process(img);
+            string text = page.GetText();
 
-                        const string expectedText =
-                            "This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\n\nThe quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n";
+            const string expectedText =
+                "This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\n\nThe quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n";
 
-                        Assert.That(text, Is.EqualTo(expectedText));
-                    }
-                }
-            }
+            Assert.That(text, Is.EqualTo(expectedText));
         }
 
         [Test]
         public void CanParseUznFile()
         {
-            using (var engine = CreateEngine()) {
-                var inputFilename = TestFilePath(@"Ocr\uzn-test.png");
-                using (var img = Pix.LoadFromFile(inputFilename)) {
-                    using (var page = engine.Process(img, inputFilename, PageSegMode.SingleLine)) {
-                        var text = page.GetText();
+            using TesseractEngine engine = CreateEngine();
+            string inputFilename = TestFilePath(@"Ocr\uzn-test.png");
+            using Pix img = Pix.LoadFromFile(inputFilename);
+            using Page page = engine.Process(img, inputFilename, PageSegMode.SingleLine);
+            string text = page.GetText();
 
-                        const string expectedText =
-                            "This is another test\n";
+            const string expectedText =
+                "This is another test\n";
 
-                        Assert.That(text, Is.EqualTo(expectedText));
-                    }
-                }
-            }
+            Assert.That(text, Is.EqualTo(expectedText));
         }
 
 #if NETFULL
@@ -123,46 +109,37 @@ namespace Tesseract.Tests
         [Test, Ignore("#489")]
         public void CanProcessSpecifiedRegionInImage()
         {
-            using (var engine = CreateEngine(mode:EngineMode.LstmOnly))
-            {
-                using (var img = LoadTestPix(TestImagePath))
-                {
-                    using (var page = engine.Process(img, Rect.FromCoords(0, 0, img.Width, 188)))
-                    {
-                        var region1Text = page.GetText();
+            using TesseractEngine engine = CreateEngine(mode: EngineMode.LstmOnly);
+            using Pix img = LoadTestPix(TestImagePath);
+            using Page page = engine.Process(img, Rect.FromCoords(0, 0, img.Width, 188));
+            string region1Text = page.GetText();
 
-                        const string expectedTextRegion1 =
-                            "This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\n";
+            const string expectedTextRegion1 =
+                "This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\n";
 
-                        Assert.That(region1Text, Is.EqualTo(expectedTextRegion1));
-                    }
-                }
-            }
+            Assert.That(region1Text, Is.EqualTo(expectedTextRegion1));
         }
 
         [Test, Ignore("#489")]
         public void CanProcessDifferentRegionsInSameImage()
         {
-            using (var engine = CreateEngine()) {
-                using (var img = LoadTestPix(TestImagePath)) {
-                    using (var page = engine.Process(img, Rect.FromCoords(0, 0, img.Width, 188))) {
-                        var region1Text = page.GetText();
+            using TesseractEngine engine = CreateEngine();
+            using Pix img = LoadTestPix(TestImagePath);
+            using Page page = engine.Process(img, Rect.FromCoords(0, 0, img.Width, 188));
+            string region1Text = page.GetText();
 
-                        const string expectedTextRegion1 =
-                            "This is a lot of 12 point text to test the\ncor code and see if it works on all types\nof file format.\n";
+            const string expectedTextRegion1 =
+                "This is a lot of 12 point text to test the\ncor code and see if it works on all types\nof file format.\n";
 
-                        Assert.That(region1Text, Is.EqualTo(expectedTextRegion1));
+            Assert.That(region1Text, Is.EqualTo(expectedTextRegion1));
 
-                        page.RegionOfInterest = Rect.FromCoords(0, 188, img.Width, img.Height);
+            page.RegionOfInterest = Rect.FromCoords(0, 188, img.Width, img.Height);
 
-                        var region2Text = page.GetText();
-                        const string expectedTextRegion2 =
-                            "The quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n";
+            string region2Text = page.GetText();
+            const string expectedTextRegion2 =
+                "The quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n";
 
-                        Assert.That(region2Text, Is.EqualTo(expectedTextRegion2));
-                    }
-                }
-            }
+            Assert.That(region2Text, Is.EqualTo(expectedTextRegion2));
         }
 
         [Test]
@@ -170,35 +147,30 @@ namespace Tesseract.Tests
         {
             int expectedCount = 8; // number of text lines in test image
 
-            using (var engine = CreateEngine())
+            using TesseractEngine engine = CreateEngine();
+            string imgPath = TestFilePath(TestImagePath);
+            using Pix img = Pix.LoadFromFile(imgPath);
+            using Page page = engine.Process(img);
+            List<Rectangle> boxes = page.GetSegmentedRegions(PageIteratorLevel.TextLine);
+
+            for (int i = 0; i < boxes.Count; i++)
             {
-                var imgPath = TestFilePath(TestImagePath);
-                using (var img = Pix.LoadFromFile(imgPath))
-                {
-                    using (var page = engine.Process(img)) {
-                        List<Rectangle> boxes = page.GetSegmentedRegions(PageIteratorLevel.TextLine);
-
-                        for (int i = 0; i < boxes.Count; i++) {
-                            Rectangle box = boxes[i];
-                            Console.WriteLine(String.Format("Box[{0}]: x={1}, y={2}, w={3}, h={4}", i, box.X, box.Y, box.Width, box.Height));
-                        }
-
-                        Assert.AreEqual(boxes.Count, expectedCount);
-                    }
-                }
+                Rectangle box = boxes[i];
+                Console.WriteLine(string.Format("Box[{0}]: x={1}, y={2}, w={3}, h={4}", i, box.X, box.Y, box.Width, box.Height));
             }
+
+            Assert.AreEqual(boxes.Count, expectedCount);
         }
 
         [Test]
         public void CanProcessEmptyPxUsingResultIterator()
         {
             string actualResult;
-            using (var engine = CreateEngine()) {
-                using (var img = LoadTestPix("ocr/empty.png")) {
-                    using (var page = engine.Process(img)) {
-                        actualResult = PageSerializer.Serialize(page, false);
-                    }
-                }
+            using (TesseractEngine engine = CreateEngine())
+            {
+                using Pix img = LoadTestPix("ocr/empty.png");
+                using Page page = engine.Process(img);
+                actualResult = PageSerializer.Serialize(page, false);
             }
 
             Assert.That(actualResult, Is.EqualTo(
@@ -211,19 +183,17 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [Test]
         public void CanProcessMultiplePixs()
         {
-            using (var engine = CreateEngine()) {
-                for (int i = 0; i < 3; i++) {
-                    using (var img = LoadTestPix(TestImagePath)) {
-                        using (var page = engine.Process(img)) {
-                            var text = page.GetText();
+            using TesseractEngine engine = CreateEngine();
+            for (int i = 0; i < 3; i++)
+            {
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string text = page.GetText();
 
-                            const string expectedText =
-                                "This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\n\nThe quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n";
+                const string expectedText =
+                    "This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\n\nThe quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n";
 
-                            Assert.That(text, Is.EqualTo(expectedText));
-                        }
-                    }
-                }
+                Assert.That(text, Is.EqualTo(expectedText));
             }
         }
 
@@ -231,15 +201,14 @@ TestUtils.NormaliseNewLine(@"</word></line>
         public void CanProcessPixUsingResultIterator()
         {
             const string ResultPath = @"EngineTests\CanProcessPixUsingResultIterator.txt";
-            var actualResultPath = TestResultRunFile(ResultPath);
+            string actualResultPath = TestResultRunFile(ResultPath);
 
-            using (var engine = CreateEngine()) {
-                using (var img = LoadTestPix(TestImagePath)) {
-                    using (var page = engine.Process(img)) {
-                        var pageString = PageSerializer.Serialize(page, false);
-                        File.WriteAllText(actualResultPath, pageString);
-                    }
-                }
+            using (TesseractEngine engine = CreateEngine())
+            {
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string pageString = PageSerializer.Serialize(page, false);
+                File.WriteAllText(actualResultPath, pageString);
             }
 
             CheckResult(ResultPath);
@@ -270,17 +239,16 @@ TestUtils.NormaliseNewLine(@"</word></line>
 
         [Test]
         public void CanGenerateHOCROutput(
-            [Values(true, false)] Boolean useXHtml)
+            [Values(true, false)] bool useXHtml)
         {
-            var resultFilename = String.Format("EngineTests/CanGenerateHOCROutput_{0}.txt", useXHtml);
+            string resultFilename = string.Format("EngineTests/CanGenerateHOCROutput_{0}.txt", useXHtml);
 
-            using (var engine = CreateEngine()) {
-                using (var img = LoadTestPix(TestImagePath)) {
-                    using (var page = engine.Process(img)) {
-                        var actualResult = TestUtils.NormaliseNewLine(page.GetHOCRText(1, useXHtml));
-                        File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
-                    }
-                }
+            using (TesseractEngine engine = CreateEngine())
+            {
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string actualResult = TestUtils.NormaliseNewLine(page.GetHOCRText(1, useXHtml));
+                File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
             }
 
             CheckResult(resultFilename);
@@ -289,18 +257,14 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [Test]
         public void CanGenerateAltoOutput()
         {
-            var resultFilename = String.Format("EngineTests/CanGenerateAltoOutput.txt");
+            string resultFilename = string.Format("EngineTests/CanGenerateAltoOutput.txt");
 
-            using (var engine = CreateEngine())
+            using (TesseractEngine engine = CreateEngine())
             {
-                using (var img = LoadTestPix(TestImagePath))
-                {
-                    using (var page = engine.Process(img))
-                    {
-                        var actualResult = TestUtils.NormaliseNewLine(page.GetAltoText(1));
-                        File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
-                    }
-                }
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string actualResult = TestUtils.NormaliseNewLine(page.GetAltoText(1));
+                File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
             }
 
             CheckResult(resultFilename);
@@ -309,18 +273,14 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [Test]
         public void CanGenerateTsvOutput()
         {
-            var resultFilename = String.Format("EngineTests/CanGenerateTsvOutput.txt");
+            string resultFilename = string.Format("EngineTests/CanGenerateTsvOutput.txt");
 
-            using (var engine = CreateEngine())
+            using (TesseractEngine engine = CreateEngine())
             {
-                using (var img = LoadTestPix(TestImagePath))
-                {
-                    using (var page = engine.Process(img))
-                    {
-                        var actualResult = TestUtils.NormaliseNewLine(page.GetTsvText(1));
-                        File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
-                    }
-                }
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string actualResult = TestUtils.NormaliseNewLine(page.GetTsvText(1));
+                File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
             }
 
             CheckResult(resultFilename);
@@ -329,17 +289,13 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [Test]
         public void CanGenerateBoxOutput()
         {
-            var resultFilename = String.Format("EngineTests/CanGenerateBoxOutput.txt");
-            using (var engine = CreateEngine())
+            string resultFilename = string.Format("EngineTests/CanGenerateBoxOutput.txt");
+            using (TesseractEngine engine = CreateEngine())
             {
-                using (var img = LoadTestPix(TestImagePath))
-                {
-                    using (var page = engine.Process(img))
-                    {
-                        var actualResult = TestUtils.NormaliseNewLine(page.GetBoxText(1));
-                        File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
-                    }
-                }
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string actualResult = TestUtils.NormaliseNewLine(page.GetBoxText(1));
+                File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
             }
 
             CheckResult(resultFilename);
@@ -348,18 +304,14 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [Test]
         public void CanGenerateLSTMBoxOutput()
         {
-            var resultFilename = String.Format("EngineTests/CanGenerateLSTMBoxOutput.txt");
+            string resultFilename = string.Format("EngineTests/CanGenerateLSTMBoxOutput.txt");
 
-            using (var engine = CreateEngine())
+            using (TesseractEngine engine = CreateEngine())
             {
-                using (var img = LoadTestPix(TestImagePath))
-                {
-                    using (var page = engine.Process(img))
-                    {
-                        var actualResult = TestUtils.NormaliseNewLine(page.GetLSTMBoxText(1));
-                        File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
-                    }
-                }
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string actualResult = TestUtils.NormaliseNewLine(page.GetLSTMBoxText(1));
+                File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
             }
 
             CheckResult(resultFilename);
@@ -368,18 +320,14 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [Test]
         public void CanGenerateWordStrBoxOutput()
         {
-            var resultFilename = "EngineTests/CanGenerateWordStrBoxOutput.txt";
+            string resultFilename = "EngineTests/CanGenerateWordStrBoxOutput.txt";
 
-            using (var engine = CreateEngine())
+            using (TesseractEngine engine = CreateEngine())
             {
-                using (var img = LoadTestPix(TestImagePath))
-                {
-                    using (var page = engine.Process(img))
-                    {
-                        var actualResult = TestUtils.NormaliseNewLine(page.GetWordStrBoxText(1));
-                        File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
-                    }
-                }
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string actualResult = TestUtils.NormaliseNewLine(page.GetWordStrBoxText(1));
+                File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
             }
 
             CheckResult(resultFilename);
@@ -388,18 +336,14 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [Test]
         public void CanGenerateUNLVOutput()
         {
-            var resultFilename = "EngineTests/CanGenerateUNLVOutput.txt";
+            string resultFilename = "EngineTests/CanGenerateUNLVOutput.txt";
 
-            using (var engine = CreateEngine())
+            using (TesseractEngine engine = CreateEngine())
             {
-                using (var img = LoadTestPix(TestImagePath))
-                {
-                    using (var page = engine.Process(img))
-                    {
-                        var actualResult = TestUtils.NormaliseNewLine(page.GetUNLVText());
-                        File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
-                    }
-                }
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string actualResult = TestUtils.NormaliseNewLine(page.GetUNLVText());
+                File.WriteAllText(TestResultRunFile(resultFilename), actualResult);
             }
 
             CheckResult(resultFilename);
@@ -410,16 +354,12 @@ TestUtils.NormaliseNewLine(@"</word></line>
         {
             const string resultFilename = @"EngineTests\CanProcessPixUsingResultIteratorAndChoiceIterator.txt";
 
-            using (var engine = CreateEngine())
+            using (TesseractEngine engine = CreateEngine())
             {
-                using (var img = LoadTestPix(TestImagePath))
-                {
-                    using (var page = engine.Process(img))
-                    {
-                        var pageString = PageSerializer.Serialize(page, true);
-                        File.WriteAllText(TestResultRunFile(resultFilename), pageString);
-                    }
-                }
+                using Pix img = LoadTestPix(TestImagePath);
+                using Page page = engine.Process(img);
+                string pageString = PageSerializer.Serialize(page, true);
+                File.WriteAllText(TestResultRunFile(resultFilename), pageString);
             }
 
             CheckResult(resultFilename);
@@ -428,75 +368,66 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [Test]
         public void Initialise_CanLoadConfigFile()
         {
-            using (var engine = new TesseractEngine(DataPath, "eng", EngineMode.Default, "bazzar")) {
-                // verify that the config file was loaded
-                string user_patterns_suffix;
-                if (engine.TryGetStringVariable("user_words_suffix", out user_patterns_suffix)) {
-                    Assert.That(user_patterns_suffix, Is.EqualTo("user-words"));
-                } else {
-                    Assert.Fail("Failed to retrieve value for 'user_words_suffix'.");
-                }
-
-                using (var img = LoadTestPix(TestImagePath)) {
-                    using (var page = engine.Process(img)) {
-                        var text = page.GetText();
-
-                        const string expectedText =
-                            "This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\n\nThe quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n";
-                        Assert.That(text, Is.EqualTo(expectedText));
-                    }
-                }
+            using TesseractEngine engine = new(DataPath, "eng", EngineMode.Default, "bazzar");
+            // verify that the config file was loaded
+            if (engine.TryGetStringVariable("user_words_suffix", out string user_patterns_suffix))
+            {
+                Assert.That(user_patterns_suffix, Is.EqualTo("user-words"));
             }
+            else
+            {
+                Assert.Fail("Failed to retrieve value for 'user_words_suffix'.");
+            }
+
+            using Pix img = LoadTestPix(TestImagePath);
+            using Page page = engine.Process(img);
+            string text = page.GetText();
+
+            const string expectedText =
+                "This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\n\nThe quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n";
+            Assert.That(text, Is.EqualTo(expectedText));
         }
 
         [Test]
         public void Initialise_CanPassInitVariables()
         {
-            var initVars = new Dictionary<string, object>() {
+            Dictionary<string, object> initVars = new()
+            {
                 { "load_system_dawg", false }
             };
-            using (var engine = new TesseractEngine(DataPath, "eng", EngineMode.Default, Enumerable.Empty<string>(), initVars, false)) {
-                bool loadSystemDawg;
-                if (!engine.TryGetBoolVariable("load_system_dawg", out loadSystemDawg)) {
-                    Assert.Fail("Failed to get 'load_system_dawg'.");
-                }
-                Assert.That(loadSystemDawg, Is.False);
+            using TesseractEngine engine = new(DataPath, "eng", EngineMode.Default, Enumerable.Empty<string>(), initVars, false);
+            if (!engine.TryGetBoolVariable("load_system_dawg", out bool loadSystemDawg))
+            {
+                Assert.Fail("Failed to get 'load_system_dawg'.");
             }
+            Assert.That(loadSystemDawg, Is.False);
         }
 
         [Test, Ignore("Missing russian language data")]
         public void Initialise_Rus_ShouldStartEngine()
         {
-            using (var engine = new TesseractEngine(DataPath, "rus", EngineMode.Default)) {
-            }
+            using TesseractEngine engine = new(DataPath, "rus", EngineMode.Default);
         }
 
         [Test]
         public void Initialise_ShouldStartEngine(
             [ValueSource("DataPaths")] string datapath)
         {
-            using (var engine = new TesseractEngine(datapath, "eng", EngineMode.Default)) {
-            }
+            using TesseractEngine engine = new(datapath, "eng", EngineMode.Default);
         }
 
         [Test]
-        public void Initialise_ShouldThrowErrorIfDatapathNotCorrect()
-        {
-            Assert.That(() => {
-                using (var engine = new TesseractEngine(AbsolutePath(@"./IDontExist"), "eng", EngineMode.Default)) {
-                }
-            }, Throws.InstanceOf(typeof(TesseractException)));
-        }
+        public void Initialise_ShouldThrowErrorIfDatapathNotCorrect() => Assert.Throws<TesseractException>(() =>
+                                                           {
+                                                               using TesseractEngine engine = new(AbsolutePath(@"./IDontExist"), "eng", EngineMode.Default);
+                                                           });
 
-        private static IEnumerable<string> DataPaths()
-        {
-            return new string[] {
+        private static IEnumerable<string> DataPaths() => new string[] {
                 AbsolutePath(@"./tessdata"),
                 AbsolutePath(@"./tessdata/"),
                 AbsolutePath(@".\tessdata\")
             };
-        }
-        
+
         #region Variable set\get
 
         [Test]
@@ -505,15 +436,16 @@ TestUtils.NormaliseNewLine(@"</word></line>
         public void CanSetBooleanVariable(bool variableValue)
         {
             const string VariableName = "classify_enable_learning";
-            using (var engine = CreateEngine()) {
-                var variableWasSet = engine.SetVariable(VariableName, variableValue);
-                Assert.That(variableWasSet, Is.True, "Failed to set variable '{0}'.", VariableName);
-                bool result;
-                if (engine.TryGetBoolVariable(VariableName, out result)) {
-                    Assert.That(result, Is.EqualTo(variableValue));
-                } else {
-                    Assert.Fail("Failed to retrieve value for '{0}'.", VariableName);
-                }
+            using TesseractEngine engine = CreateEngine();
+            bool variableWasSet = engine.SetVariable(VariableName, variableValue);
+            Assert.That(variableWasSet, Is.True, "Failed to set variable '{0}'.", VariableName);
+            if (engine.TryGetBoolVariable(VariableName, out bool result))
+            {
+                Assert.That(result, Is.EqualTo(variableValue));
+            }
+            else
+            {
+                Assert.Fail("Failed to retrieve value for '{0}'.", VariableName);
             }
         }
 
@@ -523,19 +455,16 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [Test]
         public void CanSetClassifyBlnNumericModeVariable()
         {
-            using (var engine = CreateEngine()) {
-                engine.SetVariable("classify_bln_numeric_mode", 1);
+            using TesseractEngine engine = CreateEngine();
+            engine.SetVariable("classify_bln_numeric_mode", 1);
 
-                using (var img = Pix.LoadFromFile(TestFilePath("./processing/numbers.png"))) {
-                    using (var page = engine.Process(img)) {
-                        var text = page.GetText();
+            using Pix img = Pix.LoadFromFile(TestFilePath("./processing/numbers.png"));
+            using Page page = engine.Process(img);
+            string text = page.GetText();
 
-                        const string expectedText = "1234567890\n";
+            const string expectedText = "1234567890\n";
 
-                        Assert.That(text, Is.EqualTo(expectedText));
-                    }
-                }
-            }
+            Assert.That(text, Is.EqualTo(expectedText));
         }
 
         [Test]
@@ -544,15 +473,16 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [TestCase("edges_boxarea", -0.9)]
         public void CanSetDoubleVariable(string variableName, double variableValue)
         {
-            using (var engine = CreateEngine()) {
-                var variableWasSet = engine.SetVariable(variableName, variableValue);
-                Assert.That(variableWasSet, Is.True, "Failed to set variable '{0}'.", variableName);
-                double result;
-                if (engine.TryGetDoubleVariable(variableName, out result)) {
-                    Assert.That(result, Is.EqualTo(variableValue));
-                } else {
-                    Assert.Fail("Failed to retrieve value for '{0}'.", variableName);
-                }
+            using TesseractEngine engine = CreateEngine();
+            bool variableWasSet = engine.SetVariable(variableName, variableValue);
+            Assert.That(variableWasSet, Is.True, "Failed to set variable '{0}'.", variableName);
+            if (engine.TryGetDoubleVariable(variableName, out double result))
+            {
+                Assert.That(result, Is.EqualTo(variableValue));
+            }
+            else
+            {
+                Assert.Fail("Failed to retrieve value for '{0}'.", variableName);
             }
         }
 
@@ -563,15 +493,16 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [TestCase("textord_testregion_left", -20)]
         public void CanSetIntegerVariable(string variableName, int variableValue)
         {
-            using (var engine = CreateEngine()) {
-                var variableWasSet = engine.SetVariable(variableName, variableValue);
-                Assert.That(variableWasSet, Is.True, "Failed to set variable '{0}'.", variableName);
-                int result;
-                if (engine.TryGetIntVariable(variableName, out result)) {
-                    Assert.That(result, Is.EqualTo(variableValue));
-                } else {
-                    Assert.Fail("Failed to retrieve value for '{0}'.", variableName);
-                }
+            using TesseractEngine engine = CreateEngine();
+            bool variableWasSet = engine.SetVariable(variableName, variableValue);
+            Assert.That(variableWasSet, Is.True, "Failed to set variable '{0}'.", variableName);
+            if (engine.TryGetIntVariable(variableName, out int result))
+            {
+                Assert.That(result, Is.EqualTo(variableValue));
+            }
+            else
+            {
+                Assert.Fail("Failed to retrieve value for '{0}'.", variableName);
             }
         }
 
@@ -582,27 +513,26 @@ TestUtils.NormaliseNewLine(@"</word></line>
         [TestCase("tessedit_char_whitelist", "chinese 漢字")] // Issue 68
         public void CanSetStringVariable(string variableName, string variableValue)
         {
-            using (var engine = CreateEngine()) {
-                var variableWasSet = engine.SetVariable(variableName, variableValue);
-                Assert.That(variableWasSet, Is.True, "Failed to set variable '{0}'.", variableName);
-                string result;
-                if (engine.TryGetStringVariable(variableName, out result)) {
-                    Assert.That(result, Is.EqualTo(variableValue));
-                } else {
-                    Assert.Fail("Failed to retrieve value for '{0}'.", variableName);
-                }
+            using TesseractEngine engine = CreateEngine();
+            bool variableWasSet = engine.SetVariable(variableName, variableValue);
+            Assert.That(variableWasSet, Is.True, "Failed to set variable '{0}'.", variableName);
+            if (engine.TryGetStringVariable(variableName, out string result))
+            {
+                Assert.That(result, Is.EqualTo(variableValue));
+            }
+            else
+            {
+                Assert.Fail("Failed to retrieve value for '{0}'.", variableName);
             }
         }
 
         [Test]
         public void CanGetStringVariableThatDoesNotExist()
         {
-            using (var engine = CreateEngine()) {
-                String result;
-                Boolean success = engine.TryGetStringVariable("illegal-variable", out result);
-                Assert.That(success, Is.False);
-                Assert.That(result, Is.Null);
-            }
+            using TesseractEngine engine = CreateEngine();
+            bool success = engine.TryGetStringVariable("illegal-variable", out string result);
+            Assert.That(success, Is.False);
+            Assert.That(result, Is.Null);
         }
 
         #endregion Variable set\get
@@ -613,13 +543,12 @@ TestUtils.NormaliseNewLine(@"</word></line>
         public void CanPrintVariables()
         {
             const string ResultFilename = @"EngineTests\CanPrintVariables.txt";
-            using (var engine = CreateEngine()) {
-                var actualResultsFilename = TestResultRunFile(ResultFilename);
-                Assert.That(engine.TryPrintVariablesToFile(actualResultsFilename), Is.True);
+            using TesseractEngine engine = CreateEngine();
+            string actualResultsFilename = TestResultRunFile(ResultFilename);
+            Assert.That(engine.TryPrintVariablesToFile(actualResultsFilename), Is.True);
 
-                // Load the expected results and verify that they match
-                CheckResult(ResultFilename);
-            }
+            // Load the expected results and verify that they match
+            CheckResult(ResultFilename);
         }
 
         #endregion

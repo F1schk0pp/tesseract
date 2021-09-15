@@ -1,7 +1,4 @@
 ﻿using InteropDotNet;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Tesseract
 {
@@ -15,8 +12,8 @@ namespace Tesseract
         /// </remarks>
         public static string CustomSearchPath
         {
-            get { return LibraryLoader.Instance.CustomSearchPath; }
-            set { LibraryLoader.Instance.CustomSearchPath = value; }
+            get => LibraryLoader.Instance.CustomSearchPath;
+            set => LibraryLoader.Instance.CustomSearchPath = value;
         }
     }
 }

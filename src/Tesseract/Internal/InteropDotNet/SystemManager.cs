@@ -7,30 +7,16 @@ namespace InteropDotNet
 {
     static class SystemManager
     {
-        public static string GetPlatformName()
-        {
-            return IntPtr.Size == sizeof(int) ? "x86" : "x64";
-        }
+        public static string GetPlatformName() => IntPtr.Size == sizeof(int) ? "x86" : "x64";
 
-        public static OperatingSystem GetOperatingSystem()
-        {
-            var pid = (int)Environment.OSVersion.Platform;
-            switch (pid)
+        public static OperatingSystem GetOperatingSystem() =>
+            (int)Environment.OSVersion.Platform switch
             {
-                case (int)PlatformID.Win32NT:
-                case (int)PlatformID.Win32S:
-                case (int)PlatformID.Win32Windows:
-                case (int)PlatformID.WinCE:
-                    return OperatingSystem.Windows;
-                case (int)PlatformID.Unix:
-                case 128:
-                    return OperatingSystem.Unix;
-                case (int)PlatformID.MacOSX:
-                    return OperatingSystem.MacOSX;
-                default:
-                    return OperatingSystem.Unknown;
-            }
-        }
+                (int)PlatformID.Win32NT or (int)PlatformID.Win32S or (int)PlatformID.Win32Windows or (int)PlatformID.WinCE => OperatingSystem.Windows,
+                (int)PlatformID.Unix or 128 => OperatingSystem.Unix,
+                (int)PlatformID.MacOSX => OperatingSystem.MacOSX,
+                _ => OperatingSystem.Unknown,
+            };
     }
 
     enum OperatingSystem

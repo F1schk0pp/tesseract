@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using InteropDotNet;
+
+using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using InteropDotNet;
 
 namespace Tesseract.Interop
 {
@@ -38,7 +37,7 @@ namespace Tesseract.Interop
 
         [RuntimeDllImport(Constants.LeptonicaDllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "pixaGetCount")]
         int pixaGetCount(HandleRef pixa);
-       
+
         [RuntimeDllImport(Constants.LeptonicaDllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "pixaDestroy")]
         void pixaDestroy(ref IntPtr pix);
 
@@ -51,7 +50,7 @@ namespace Tesseract.Interop
 
         [RuntimeDllImport(Constants.LeptonicaDllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "pixClone")]
         unsafe IntPtr pixClone(HandleRef pix);
-        
+
         [RuntimeDllImport(Constants.LeptonicaDllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "pixDestroy")]
         void pixDestroy(ref IntPtr pix);
 
@@ -536,7 +535,7 @@ namespace Tesseract.Interop
         #endregion
     }
 
-    unsafe static class LeptonicaApi
+    static unsafe class LeptonicaApi
     {
         private static ILeptonicaApiSignatures native;
 
@@ -545,7 +544,10 @@ namespace Tesseract.Interop
             get
             {
                 if (native == null)
+                {
                     Initialize();
+                }
+
                 return native;
             }
         }

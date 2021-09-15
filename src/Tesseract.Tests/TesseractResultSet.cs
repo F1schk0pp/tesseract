@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace Tesseract.Tests
 {
@@ -41,7 +39,7 @@ namespace Tesseract.Tests
             public Rect Region { get; set; }
             public float Confidence { get; set; }
             public string Text { get; set; }
-            
+
             public List<Symbol> Words { get; set; }
         }
 

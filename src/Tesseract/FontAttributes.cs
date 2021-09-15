@@ -1,5 +1,3 @@
-using System;
-
 namespace Tesseract
 {
     // This class is the return type of
